@@ -195,7 +195,7 @@ export default function PropertyDetailPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400"
                     >
-                      💬 Share on WhatsApp
+                      💬 Share on WhatsApp .
                     </a>
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export default function PropertyDetailPage() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Square Feet</p>
+                    <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Square_Feet</p>
                     <div className="flex items-center gap-2">
                       <Square className="w-5 h-5 text-white/80" />
                       <span className="text-xl font-semibold text-white">{property.squareFeet.toLocaleString()}</span>
