@@ -89,7 +89,7 @@ export default function PropertyManagement({
     onPropertyChange?.();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     const property = properties.find((p) => p.id === id);
     setPropertyToDelete({
       id: id.toString(),

@@ -23,23 +23,25 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { property: propertyId, name, phone, email, notes } = body;
-    if (!propertyId || !name || !phone || !email) {
-      return NextResponse.json({ error: 'Missing required field(s)' }, { status: 400 });
+    const { propertyId, name, phone, email, notes } = body;
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    // ensure property exists
-    const property = await prisma.property.findUnique({ where: { id: Number(propertyId) } });
-    if (!property) {
-      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    // if propertyId is provided, ensure property exists
+    if (propertyId) {
+      const property = await prisma.property.findUnique({ where: { id: Number(propertyId) } });
+      if (!property) {
+        return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+      }
     }
 
     const lead = await prisma.lead.create({
       data: {
-        propertyId: Number(propertyId),
+        propertyId: propertyId ? Number(propertyId) : null,
         name,
-        phone,
-        email,
+        phone: phone || null,
+        email: email || null,
         notes,
       },
       include: { property: true },

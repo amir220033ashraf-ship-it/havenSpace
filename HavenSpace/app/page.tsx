@@ -2,12 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import PropertySearchCard from '@/components/PropertySearchCard';
-import PropertyGrid from '@/components/PropertyGrid';
-import { Button } from '@/components/ui/button';
-import { Heart, MapPin, DollarSign, ArrowRight, Star, TrendingUp, Shield } from 'lucide-react';
+import { 
+  Heart, 
+  MapPin, 
+  DollarSign, 
+  ArrowRight, 
+  Star, 
+  TrendingUp, 
+  Shield 
+} from 'lucide-react';
 
-/* ── tiny scroll-reveal hook ─────────────────────────────────── */
+/* ── SCROLL REVEAL HOOK ─────────────────────────────────────── */
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -40,7 +45,7 @@ function Reveal({
   );
 }
 
-/* ── animated counter ────────────────────────────────────────── */
+/* ── ANIMATED COUNTER ────────────────────────────────────────── */
 function Counter({ value }: { value: string }) {
   const num = parseInt(value.replace(/\D/g, ''), 10);
   const suffix = value.replace(/[\d,]/g, '');
@@ -50,23 +55,95 @@ function Counter({ value }: { value: string }) {
     if (!visible) return;
     let c = 0;
     const step = Math.ceil(num / 55);
-    const id = setInterval(() => { c += step; if (c >= num) { setCount(num); clearInterval(id); } else setCount(c); }, 16);
+    const id = setInterval(() => { 
+      c += step; 
+      if (c >= num) { setCount(num); clearInterval(id); } 
+      else setCount(c); 
+    }, 16);
     return () => clearInterval(id);
   }, [visible, num]);
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
+/* ── SPIDER NETWORK BACKGROUND ──────────────────────────────── */
+function SpiderBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: { x: number; y: number; vx: number; vy: number }[] = [];
+    const particleCount = 45;
+    const connectionDist = 160;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    const init = () => {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+        });
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(176, 125, 58, 0.4)';
+      ctx.strokeStyle = 'rgba(176, 125, 58, 0.08)';
+
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < connectionDist) {
+            ctx.lineWidth = 1 - dist / connectionDist;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+    init();
+    animate();
+    return () => window.removeEventListener('resize', resize);
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />;
+}
+
+/* ── MAIN HOME PAGE ─────────────────────────────────────────── */
 export default function Home() {
-  const [searchCity, setSearchCity] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [propertyType, setPropertyType] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
-
   useEffect(() => { const t = setTimeout(() => setHeroLoaded(true), 60); return () => clearTimeout(t); }, []);
-
-  const handleSearch = () => setHasSearched(true);
 
   return (
     <>
@@ -74,15 +151,15 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap');
 
         :root {
-          --sand:    #f5f0e8;
+          --sand:      #f5f0e8;
           --parchment: #ede8df;
-          --ink:     #1c1714;
-          --brass:   #b07d3a;
-          --brass-lt:#d4a055;
-          --sage:    #4e7a6a;
-          --rust:    #9e3d2b;
-          --white:   #ffffff;
-          --muted:   #7a6f65;
+          --ink:       #1c1714;
+          --brass:     #b07d3a;
+          --brass-lt:  #d4a055;
+          --sage:      #4e7a6a;
+          --rust:      #9e3d2b;
+          --white:     #ffffff;
+          --muted:     #7a6f65;
           --card-bg: rgba(255,255,255,0.72);
           --card-border: rgba(176,125,58,0.15);
           --r: 1.25rem;
@@ -100,7 +177,6 @@ export default function Home() {
           background-image: url('/havenspace-bg.jpeg');
           background-size: cover;
           background-position: center;
-          background-repeat: no-repeat;
           padding: 7rem 1.5rem 5rem;
         }
         .hero::before {
@@ -110,7 +186,6 @@ export default function Home() {
           z-index: 1;
         }
 
-        /* Layered background: blueprint grid + radial glow */
         .hero-bg {
           position: absolute; inset: 0; pointer-events: none;
           background:
@@ -118,20 +193,13 @@ export default function Home() {
             linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
           background-size: auto, 48px 48px, 48px 48px;
-          background-position: 0 0, -1px -1px, -1px -1px;
         }
 
-        /* Floating orbs */
-        .orb {
-          position: absolute; border-radius: 50%;
-          filter: blur(80px); pointer-events: none;
-        }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
         .orb-1 { width: 500px; height: 500px; top:-160px; right:-100px; background: rgba(176,125,58,.09); animation: orb1 12s ease-in-out infinite; }
         .orb-2 { width: 420px; height: 420px; bottom:-140px; left:-100px; background: rgba(78,122,106,.07); animation: orb2 15s ease-in-out infinite; }
-        .orb-3 { width: 280px; height: 280px; top:40%; left:60%; background: rgba(176,125,58,.06); animation: orb3 10s ease-in-out infinite; }
         @keyframes orb1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,30px)} }
         @keyframes orb2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,-25px)} }
-        @keyframes orb3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
 
         .hero-inner { position:relative; z-index:2; text-align:center; max-width:900px; width:100%; }
 
@@ -146,8 +214,6 @@ export default function Home() {
           margin-bottom: 2rem;
           opacity: 0; animation: fadeUp .5s ease .1s forwards;
         }
-        .hero-pill-dot { width: 6px; height: 6px; background: var(--brass-lt); border-radius: 50%; animation: pulse 1.5s ease infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
         .hero h1 {
           font-family: 'Cormorant Garamond', Georgia, serif;
@@ -168,351 +234,358 @@ export default function Home() {
           opacity: 0; animation: fadeUp .7s ease .4s forwards;
         }
 
-        .hero-ctas {
-          display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
-          margin-bottom: 3.5rem;
-          opacity: 0; animation: fadeUp .7s ease .55s forwards;
-        }
         .btn-brass {
           display: inline-flex; align-items: center; gap: .5rem;
           padding: .85rem 2rem;
           background: var(--brass);
           color: #fff; font-weight: 600; font-size: .95rem;
           border-radius: 3rem; text-decoration: none;
-          transition: transform .2s, box-shadow .2s, background .2s;
-          border: none; cursor: pointer;
+          transition: all .2s; border: none; cursor: pointer;
         }
         .btn-brass:hover { transform: translateY(-2px); background: var(--brass-lt); box-shadow: 0 10px 30px rgba(176,125,58,.35); }
-        .btn-ghost {
-          display: inline-flex; align-items: center; gap: .5rem;
-          padding: .85rem 2rem;
-          border: 1px solid rgba(255,255,255,.22);
-          color: rgba(255,255,255,.8); font-weight: 500; font-size: .95rem;
-          border-radius: 3rem; text-decoration: none; background: transparent;
-          transition: border-color .2s, background .2s; cursor: pointer;
-        }
-        .btn-ghost:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.06); }
 
-        /* Stats row in hero */
-        .hero-stats {
-          display: flex; gap: 0; justify-content: center;
-          border: 1px solid rgba(176,125,58,.2);
-          border-radius: var(--r);
-          overflow: hidden;
-          background: rgba(255,255,255,.04);
-          backdrop-filter: blur(12px);
-          max-width: 600px; margin: 0 auto 3.5rem;
-          opacity: 0; animation: fadeUp .7s ease .7s forwards;
-        }
-        .hero-stat {
-          flex: 1; padding: 1.5rem 1rem; text-align: center;
-          border-right: 1px solid rgba(176,125,58,.15);
-          transition: background .2s;
-        }
-        .hero-stat:last-child { border-right: none; }
-        .hero-stat:hover { background: rgba(255,255,255,.06); }
-        .hero-stat strong {
-          display: block;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.2rem; font-weight: 700;
-          color: var(--brass-lt); line-height: 1;
-        }
-        .hero-stat span {
-          display: block; margin-top: .3rem;
-          font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
-          color: rgba(255,255,255,.38);
-        }
-
-        /* Search card wrapper */
-        .search-wrapper {
+        /* ── DISCOVER SECTION (Improved with Spider BG) ── */
+        .discover-section {
           position: relative;
-          opacity: 0; animation: fadeUp .8s ease .85s forwards;
+          background: #0d0b0a;
+          color: #fff;
+          padding: 10rem 1.5rem;
+          overflow: hidden;
         }
-        .search-wrapper::before {
-          content: '';
-          position: absolute; inset: -1px;
-          border-radius: calc(var(--r) + 1px);
-          background: linear-gradient(135deg, rgba(176,125,58,.4), rgba(78,122,106,.2), rgba(176,125,58,.3));
-          z-index: 0;
-        }
-        .search-inner { position: relative; z-index: 1; border-radius: var(--r); overflow: hidden; }
+        .discover-container { position: relative; z-index: 2; max-width: 1160px; margin: auto; text-align: center; }
 
-        /* Scroll cue */
-        .scroll-cue {
-          position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
-          display: flex; flex-direction: column; align-items: center; gap: .4rem;
-          color: rgba(255,255,255,.25); font-size: .65rem; letter-spacing: .15em; text-transform: uppercase;
-          opacity: 0; animation: fadeIn 1s ease 1.4s forwards;
-        }
-        .scroll-track { width: 18px; height: 28px; border: 1px solid rgba(255,255,255,.2); border-radius: 9px; position: relative; }
-        .scroll-track::after {
-          content: ''; position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
-          width: 3px; height: 5px; background: var(--brass); border-radius: 2px;
-          animation: scrollBob 1.6s ease infinite;
-        }
-        @keyframes scrollBob { 0%,100%{top:4px;opacity:1} 60%{top:14px;opacity:.2} }
-
-        @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-        /* ── FEATURED SECTION ── */
-        .section { padding: 6rem 1.5rem; }
-        .container { max-width: 1160px; margin: auto; }
-
-        .section-header {
-          display: flex; align-items: flex-end; justify-content: space-between;
-          flex-wrap: wrap; gap: 1.5rem; margin-bottom: 3rem;
-        }
         .section-eyebrow {
           display: block; font-size: .7rem; font-weight: 700;
-          letter-spacing: .2em; text-transform: uppercase;
-          color: var(--brass); margin-bottom: .5rem;
+          letter-spacing: .25em; text-transform: uppercase;
+          color: var(--brass); margin-bottom: 1rem;
         }
         .section-title {
           font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(1.9rem, 3.5vw, 2.75rem);
-          font-weight: 700; line-height: 1.15;
+          font-size: clamp(2.5rem, 5vw, 4rem);
+          font-weight: 700; line-height: 1.1;
+          margin-bottom: 4rem;
         }
-        .section-link {
-          display: inline-flex; align-items: center; gap: .4rem;
-          font-size: .9rem; font-weight: 600; color: var(--brass);
-          text-decoration: none; white-space: nowrap;
-          border-bottom: 1px solid transparent;
-          transition: border-color .2s;
-        }
-        .section-link:hover { border-color: var(--brass); }
 
-        /* ── HERO IMAGE ── */
-        .hero-image {
-          position: relative;
-          min-height: 80vh;
-          display: flex; flex-direction: column;
-          justify-content: center; align-items: center;
-          background: var(--ink);
-          color: #fff;
-          text-align: center;
-          padding: 4rem 1.5rem;
-        }
-        .hero-image .container {
-          position: relative; z-index: 1;
-          max-width: 800px;
-        }
-        .hero-image .section-eyebrow {
-          color: var(--brass-lt);
-        }
-        .hero-image .section-title {
-          color: #fff;
-          margin-bottom: 1.5rem;
-        }
-        .hero-image .why-grid {
+        .why-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
-          gap: 1.5rem; margin-top: 3.5rem;
-          background: rgba(255,255,255,0.1);
-          backdrop-filter: blur(10px);
-          border-radius: var(--r);
-          padding: 2rem;
-        }
-        .hero-image .why-card {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.2);
-          color: #fff;
-        }
-        .hero-image .why-card h3 {
-          color: #fff;
-        }
-        .hero-image .why-card p {
-          color: rgba(255,255,255,0.8);
-        }
-        .hero-image .why-icon-wrap {
-          width: 52px; height: 52px;
-          border: 1px solid rgba(255,255,255,0.3);
-          border-radius: .875rem;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.1);
-          margin-bottom: 1.5rem;
-          color: var(--brass-lt);
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2.5rem;
         }
 
-        /* ── TESTIMONIAL ── */
-        .testi-strip {
-          background: var(--parchment);
-          padding: 5rem 1.5rem;
-          overflow: hidden;
+        .why-card {
+          position: relative;
+          background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 1.5rem;
+          padding: 4rem 2rem;
+          transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .testi-cards {
-          display: flex; gap: 1.5rem;
-          margin-top: 2.5rem;
-          overflow-x: auto; padding-bottom: .5rem;
-          scrollbar-width: none;
+        .why-card:hover {
+          transform: translateY(-12px);
+          border-color: rgba(176,125,58,0.4);
+          background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
-        .testi-cards::-webkit-scrollbar { display: none; }
-        .testi-card {
-          flex: 0 0 320px;
-          background: var(--white);
-          border: 1px solid var(--card-border);
-          border-radius: var(--r);
-          padding: 2rem;
-          box-shadow: 0 4px 20px rgba(28,23,20,.06);
-          transition: transform .3s, box-shadow .3s;
-        }
-        .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(28,23,20,.10); }
-        .stars { display: flex; gap: 3px; margin-bottom: 1rem; color: var(--brass); }
-        .testi-card blockquote {
-          font-size: .95rem; line-height: 1.75; color: var(--muted);
-          margin-bottom: 1.25rem;
-          font-style: italic;
-        }
-        .testi-author { display: flex; align-items: center; gap: .75rem; }
-        .testi-avatar {
-          width: 40px; height: 40px; border-radius: 50%;
-          background: linear-gradient(135deg, var(--brass), var(--rust));
+
+        .why-icon-wrap {
+          width: 70px; height: 70px;
+          background: rgba(176,125,58,0.1);
+          color: var(--brass-lt);
+          border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1rem; font-weight: 700; color: #fff;
+          margin: 0 auto 1.5rem;
+          transition: all 0.4s ease;
         }
-        .testi-name { font-weight: 600; font-size: .9rem; }
-        .testi-role { font-size: .78rem; color: var(--muted); }
+        .why-card:hover .why-icon-wrap {
+          background: var(--brass);
+          color: #fff;
+          transform: scale(1.1) rotate(5deg);
+        }
+
+        .why-card h3 { font-size: 1.3rem; font-weight: 500; margin-bottom: 1rem; color: #fff; }
+        .why-card p { font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.5); }
+
+        .why-image-wrap {
+          width: 100%;
+          height: 200px;
+          border-radius: 1rem;
+          overflow: hidden;
+          margin-bottom: 2rem;
+          position: relative;
+        }
+        .why-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+        .why-card:hover .why-image {
+          transform: scale(1.05);
+        }
+
+        /* ── TESTIMONIALS ── */
+        .testi-strip { background: var(--parchment); padding: 6rem 1.5rem; }
+        .testi-cards { display: flex; gap: 1.5rem; overflow-x: auto; padding: 2rem 0; scrollbar-width: none; }
+        .testi-card {
+          flex: 0 0 320px; background: #fff; padding: 2.5rem;
+          border-radius: var(--r); border: 1px solid var(--card-border);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
 
         /* ── CTA BOTTOM ── */
         .cta-bottom {
-          background: #231e1b;
-          padding: 6rem 1.5rem;
-          text-align: center;
-          position: relative; overflow: hidden;
+          background: #1c1714; padding: 8rem 1.5rem;
+          text-align: center; color: #fff; position: relative;
         }
-        .cta-bottom::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
-          background-size: 180px; opacity: .5; pointer-events: none;
-        }
-        .cta-bottom h2 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(2rem,5vw,3.5rem); font-weight: 700; color: #fff;
-          margin-bottom: 1rem; position: relative;
-        }
-        .cta-bottom p {
-          color: rgba(255,255,255,.7); font-size: 1.05rem;
-          max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.7; position: relative;
-        }
-        .btn-white {
-          display: inline-flex; align-items: center; gap: .5rem;
-          padding: .9rem 2.25rem;
-          background: #fff; color: var(--brass);
-          font-weight: 700; font-size: .95rem;
-          border-radius: 3rem; text-decoration: none;
-          transition: transform .2s, box-shadow .2s;
-          position: relative;
-        }
-        .btn-white:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,.2); }
+        .cta-bottom h2 { font-family: 'Cormorant Garamond', serif; font-size: 3rem; margin-bottom: 1.5rem; }
 
-        .cta-feats {
-          display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
-          margin-top: 3rem; position: relative;
-        }
-        .cta-feat {
-          display: flex; align-items: center; gap: .5rem;
-          color: rgba(255,255,255,.75); font-size: .88rem;
-        }
-        .cta-feat svg { color: rgba(255,255,255,.5); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
       `}</style>
 
       <div className="home-page">
-
         {/* ═══ HERO ═══ */}
         <section className="hero">
           <div className="hero-bg" />
           <div className="orb orb-1" />
           <div className="orb orb-2" />
-          <div className="orb orb-3" />
-
           <div className="hero-inner">
             <div className="hero-pill">
-              <span className="hero-pill-dot" />
+              <span className="w-1.5 h-1.5 bg-brass-lt rounded-full animate-pulse mr-2" />
               Discover Premium Properties
             </div>
-
-            <h1>
-              Find Your<br /><em>Dream Home.</em>
-            </h1>
-
+            <h1>Find Your<br /><em>Dream Home.</em></h1>
             <p className="hero-desc">
               Browse thousands of curated listings, connect with expert agents, and
               make the most important decision of your life with total confidence.
             </p>
-
-            <div className="hero-ctas">
+            <div className="flex gap-4 justify-center">
               <Link href="/gallery">
-                <button className="btn-brass">
-                  Start Searching <ArrowRight size={16} />
-                </button>
-              </Link>
-              <Link href="/about">
-                <button className="btn-ghost">Learn More</button>
+                <button className="btn-brass">Start Searching <ArrowRight size={16} /></button>
               </Link>
             </div>
           </div>
-
-          <div className="scroll-cue">
-            <div className="scroll-track" />
-            Scroll
-          </div>
         </section>
 
-        {/* ═══ HERO IMAGE ── */}
-        <section className="hero-image">
-          <div className="container">
+        {/* ═══ DISCOVER SECTION (The Improved UI) ═══ */}
+        <section className="discover-section">
+          <SpiderBackground />
+          <div className="discover-container">
             <Reveal>
-              <div className="section-header">
-                <div>
-                  <span className="section-eyebrow">Discover</span>
-                  <h2 className="section-title">Find Your Dream Home.</h2>
-                </div>
-              </div>
+              <span className="section-eyebrow">Excellence in Real Estate</span>
+              <h2 className="section-title">Why Choose HavenSpace?</h2>
             </Reveal>
-            <Reveal delay={120}>
-              <div className="why-grid">
-                {[
-                  { icon: MapPin, title: 'Extensive Property Database', desc: 'Browse through thousands of verified properties in prime locations worldwide.' },
-                  { icon: DollarSign, title: 'Flexible Price Ranges', desc: 'Find homes that fit your budget, from affordable starter homes to luxury estates.' },
-                  { icon: Star, title: 'Premium Quality Listings', desc: 'Every property features high-quality photos, detailed descriptions, and virtual tours.' },
-                ].map((item, i) => (
-                  <div key={i} className="why-card">
+
+            <div className="why-grid">
+              {[
+                { 
+                  icon: MapPin, 
+                  title: 'Prime Locations', 
+                  desc: 'Browse through thousands of verified properties in the world\'s most sought-after neighborhoods.',
+                  image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400'
+                },
+                { 
+                  icon: DollarSign, 
+                  title: 'Flexible Financing', 
+                  desc: 'Find homes that fit your budget perfectly, from starter homes to vast luxury estates.',
+                  image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400'
+                },
+                { 
+                  icon: Star, 
+                  title: 'Quality Assured', 
+                  desc: 'Every listing undergoes a rigorous 50-point inspection to ensure it meets our premium standards.',
+                  image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
+                },
+              ].map((item, i) => (
+                <Reveal key={i} delay={i * 100}>
+                  <div className="why-card">
+                    <div className="why-image-wrap">
+                      <img 
+                        src={item.image} 
+                        alt={item.title}
+                        className="why-image"
+                      />
+                    </div>
                     <div className="why-icon-wrap">
-                      <item.icon size={24} />
+                      <item.icon size={28} />
                     </div>
                     <h3>{item.title}</h3>
                     <p>{item.desc}</p>
                   </div>
-                ))}
-              </div>
-            </Reveal>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
-     
+        {/* ═══ TESTIMONIALS ═══ */}
+<section className="testi-strip">
+  <div className="max-w-[1160px] mx-auto">
+    <Reveal>
+      <div className="text-center mb-12">
+        <span className="section-eyebrow" style={{ color: 'var(--brass)' }}>Voices of HavenSpace</span>
+        <h2 className="section-title" style={{ color: 'var(--ink)' }}>What Our Clients Say</h2>
+      </div>
+    </Reveal>
+
+    <div className="testi-grid">
+      {[
+        {
+          name: "Sarah Montgomery",
+          role: "Homeowner",
+          initials: "SM",
+          text: "We walked into this process expecting the usual headaches of house-hunting, but HavenSpace turned a complex transition into a total breeze. Their team handled the heavy lifting with such precision."
+        },
+        {
+          name: "Julian Sterling",
+          role: "Property Investor",
+          initials: "JS",
+          text: "Luxury is in the details, and HavenSpace understands that perfectly. They don't just list properties; they curate lifestyles. The white-glove service we received was truly in a league of its own."
+        },
+        {
+          name: "Elena Rodriguez",
+          role: "First-time Buyer",
+          initials: "ER",
+          text: "Their vetting process is clearly superior. We didn't waste a single afternoon on 'average' listings—every home shown was a masterpiece. They have a sharp eye for quality that saved us weeks."
+        }
+      ].map((testimonial, i) => (
+        <Reveal key={i} delay={i * 150}>
+          <div className="testi-card">
+            {/* Decorative Quote Icon */}
+            <div className="testi-quote-mark">“</div>
+            
+            <div className="flex text-brass mb-5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={14} fill="currentColor" className="mr-0.5" />
+              ))}
+            </div>
+
+            <p className="testi-text">"{testimonial.text}"</p>
+
+            <div className="testi-footer">
+              <div className="testi-avatar">{testimonial.initials}</div>
+              <div>
+                <div className="testi-author-name">{testimonial.name}</div>
+                <div className="testi-author-role">{testimonial.role}</div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      ))}
+    </div>
+  </div>
+
+  <style jsx>{`
+    .testi-strip {
+      background: var(--parchment);
+      padding: 8rem 1.5rem;
+      position: relative;
+    }
+
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .testi-card {
+      background: #ffffff;
+      padding: 3rem 2.5rem;
+      border-radius: var(--r);
+      border: 1px solid rgba(176, 125, 58, 0.1);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+
+    .testi-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--brass);
+      box-shadow: 0 20px 40px rgba(28, 23, 20, 0.08);
+    }
+
+    .testi-quote-mark {
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 8rem;
+      color: rgba(176, 125, 58, 0.05);
+      z-index: -1;
+      line-height: 1;
+    }
+
+    .testi-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-style: italic;
+      flex-grow: 1;
+    }
+
+    .testi-footer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding-top: 1.5rem;
+    }
+
+    .testi-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--brass) 0%, var(--ink) 100%);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+
+    .testi-author-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .testi-author-role {
+      font-size: 0.75rem;
+      color: var(--brass);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .testi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `}</style>
+</section>
 
         {/* ═══ CTA BOTTOM ═══ */}
         <section className="cta-bottom">
           <Reveal>
             <h2>Ready to find your forever home?</h2>
-            <p>
-              Join thousands of happy homeowners who trusted Real Estate Hub to
+            <p className="text-white/60 max-w-xl mx-auto mb-8">
+              Join thousands of happy homeowners who trusted HavenSpace to
               make the biggest decision of their lives feel effortless.
             </p>
-          
-            <div className="cta-feats">
-              {['No sign-up fee', 'Expert agents on call'].map((f) => (
-                <div key={f} className="cta-feat">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                  {f}
-                </div>
-              ))}
-            </div>
+            <Link href="/connect" className="btn-brass bg-white text-brass hover:bg-parchment px-10 py-4">
+              Get Started Today
+            </Link>
           </Reveal>
         </section>
-
       </div>
     </>
   );

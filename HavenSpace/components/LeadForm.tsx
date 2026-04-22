@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Loader2, CheckCircle } from 'lucide-react';
 
 interface LeadFormProps {
-  propertyId: string;
+  propertyId: number;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
@@ -31,7 +31,7 @@ export default function LeadForm({ propertyId, trigger, onSuccess }: LeadFormPro
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ property: propertyId, name, phone, email, notes }),
+        body: JSON.stringify({ propertyId, name, phone, email, notes }),
       });
       if (!res.ok) {
         const json = await res.json();

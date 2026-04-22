@@ -11,11 +11,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     const { id } = await params;
-    const lead = await prisma.lead.delete({ where: { id: Number(id) } });
-
-    if (!lead) {
-      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
-    }
+    await prisma.lead.delete({ where: { id: Number(id) } });
 
     return NextResponse.json({ message: 'Lead deleted successfully' });
   } catch (error) {

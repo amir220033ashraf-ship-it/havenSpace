@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropertyCard from './PropertyCard';
-import { Empty } from '@/components/ui/empty';
+import { Empty, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
@@ -128,15 +128,16 @@ export default function PropertyGrid({
         className="py-20"
       >
         <Empty
-          icon="House"
           className="bg-[#1a1614] border border-white/5 p-12 rounded-3xl"
-          title={hasSearched ? 'No matching retreats' : 'No properties yet'}
-          description={
-            hasSearched
+        >
+          <EmptyTitle>{hasSearched ? 'No matching retreats' : 'No properties yet'}</EmptyTitle>
+          <EmptyDescription>
+            {hasSearched
               ? 'Try widening your price range or exploring another city.'
               : 'Our curators are currently adding new exclusive listings.'
-          }
-        />
+            }
+          </EmptyDescription>
+        </Empty>
       </motion.div>
     );
   }

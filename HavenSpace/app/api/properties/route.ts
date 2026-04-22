@@ -1,9 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+/* =========================
+   SAFE IMAGE URL PARSER
+========================= */
+function parseImageUrls(input: any): string[] {
+  if (!input) return [];
+
+  // already array
+  if (Array.isArray(input)) return input;
+
+  // string case (old DB or wrong input)
+  if (typeof input === 'string') {
+    try {
+      const parsed = JSON.parse(input);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+/* =========================
+   GET PROPERTIES
+========================= */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+
     const city = searchParams.get('city');
     const status = searchParams.get('status') || 'available';
     const minPrice = searchParams.get('minPrice');
@@ -33,21 +59,37 @@ export async function GET(request: NextRequest) {
       take: limit > 0 ? limit : undefined,
     });
 
-    const normalized = properties.map((p) => ({
-      ...p,
-      imageUrls: p.imageUrls ? JSON.parse(p.imageUrls as string) : [],
-    }));
+    console.log('🔍 [GET] Properties count:', properties.length);
+
+    const normalized = properties.map((p, i) => {
+      const imageUrls = parseImageUrls(p.imageUrls);
+
+      console.log(`🖼️ [GET] Property ${i} imageUrls:`, imageUrls);
+
+      return {
+        ...p,
+        imageUrls,
+      };
+    });
 
     return NextResponse.json(normalized);
   } catch (error) {
-    console.error('Error fetching properties:', error);
-    return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
+    console.error('❌ Error fetching properties:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch properties' },
+      { status: 500 }
+    );
   }
 }
 
+/* =========================
+   CREATE PROPERTY
+========================= */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    console.log('📥 [POST] Incoming imageUrls:', body.imageUrls);
 
     const requiredFields = [
       'title',
@@ -65,7 +107,10 @@ export async function POST(request: NextRequest) {
 
     for (const field of requiredFields) {
       if (!body[field]) {
-        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
       }
     }
 
@@ -83,18 +128,25 @@ export async function POST(request: NextRequest) {
         squareFeet: Number(body.squareFeet),
         propertyType: body.propertyType,
         status: body.status || 'available',
-        imageUrls: JSON.stringify(body.imageUrls || []),
+
+        imageUrls: parseImageUrls(body.imageUrls),
       },
     });
 
-    const normalizedProperty = {
-      ...property,
-      imageUrls: property.imageUrls ? JSON.parse(property.imageUrls) : [],
-    };
+    console.log('💾 [POST] Saved imageUrls:', property.imageUrls);
 
-    return NextResponse.json(normalizedProperty, { status: 201 });
+    return NextResponse.json(
+      {
+        ...property,
+        imageUrls: parseImageUrls(property.imageUrls),
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
-    console.error('Error creating property:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create property' }, { status: 500 });
+    console.error('❌ Error creating property:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to create property' },
+      { status: 500 }
+    );
   }
 }

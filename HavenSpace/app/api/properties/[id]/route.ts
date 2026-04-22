@@ -3,6 +3,28 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+/* =========================
+   SAFE IMAGE URL PARSER
+========================= */
+function parseImageUrls(input: any): string[] {
+  if (!input) return [];
+
+  // already array
+  if (Array.isArray(input)) return input;
+
+  // string case (old DB or wrong input)
+  if (typeof input === 'string') {
+    try {
+      const parsed = JSON.parse(input);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -15,7 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Normalize imageUrls from JSON string to array
     const normalizedProperty = {
       ...property,
-      imageUrls: property.imageUrls ? JSON.parse(property.imageUrls as string) : [],
+      imageUrls: parseImageUrls(property.imageUrls),
     };
 
     return NextResponse.json(normalizedProperty);

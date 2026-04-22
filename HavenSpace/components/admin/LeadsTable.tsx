@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Trash2, MessageSquare } from 'lucide-react';
 
 interface Lead {
-  _id: string;
-  property: {
-    _id: string;
+  id: number;
+  property?: {
+    id: number;
     title: string;
     city: string;
   };
   name: string;
-  phone: string;
-  email: string;
+  phone?: string;
+  email?: string;
   notes?: string;
   createdAt: string;
 }
@@ -56,10 +56,10 @@ export default function LeadsTable({ leads, onDelete }: LeadsTableProps) {
           </thead>
           <tbody className="divide-y divide-white/5">
             {leads.map((lead) => (
-              <tr key={lead._id} className="group transition-colors hover:bg-white/[0.03]">
+              <tr key={lead.id} className="group transition-colors hover:bg-white/[0.03]">
                 <td className="py-4 px-6">
                   <p className="font-medium text-white line-clamp-1 max-w-[200px]">
-                    {lead.property?.title || '–'}
+                    {lead.property ? lead.property.title : 'General Inquiry'}
                   </p>
                   <p className="text-xs text-white/50">{lead.property?.city || ''}</p>
                 </td>
@@ -67,10 +67,10 @@ export default function LeadsTable({ leads, onDelete }: LeadsTableProps) {
                   <p className="text-white/90">{lead.name}</p>
                 </td>
                 <td className="py-4 px-6">
-                  <p className="text-white/90">{lead.phone}</p>
+                  <p className="text-white/90">{lead.phone || '—'}</p>
                 </td>
                 <td className="py-4 px-6">
-                  <p className="text-white/90 break-all">{lead.email}</p>
+                  <p className="text-white/90 break-all">{lead.email || '—'}</p>
                 </td>
                 <td className="py-4 px-6">
                   <p className="text-white/70 line-clamp-2 max-w-[200px]">{lead.notes || '—'}</p>
@@ -84,7 +84,7 @@ export default function LeadsTable({ leads, onDelete }: LeadsTableProps) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-white/50 hover:text-red-400 hover:bg-red-400/10 rounded-full"
-                      onClick={() => onDelete(lead._id)}
+                      onClick={() => onDelete(lead.id.toString())}
                       title="Delete Lead"
                     >
                       <Trash2 className="w-4 h-4" />

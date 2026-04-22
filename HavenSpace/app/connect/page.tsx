@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
+import ContactForm from '@/components/ContactForm'
 
 export const metadata: Metadata = {
   title: 'Connect - Real Estate Hub',
@@ -124,36 +125,7 @@ export default function ConnectPage() {
                 <h2 className="text-2xl font-bold">Send an Inquiry</h2>
               </div>
 
-              <form className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">First Name</label>
-                    <Input placeholder="John" className="bg-white/5 border-white/10 h-12 focus-visible:ring-emerald-500/20" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Last Name</label>
-                    <Input placeholder="Doe" className="bg-white/5 border-white/10 h-12 focus-visible:ring-emerald-500/20" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Email Address</label>
-                  <Input type="email" placeholder="john@example.com" className="bg-white/5 border-white/10 h-12 focus-visible:ring-emerald-500/20" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Your Message</label>
-                  <Textarea 
-                    placeholder="Tell us about the property you are interested in..." 
-                    className="bg-white/5 border-white/10 min-h-[120px] focus-visible:ring-emerald-500/20" 
-                  />
-                </div>
-
-                <Button className="w-full h-14 bg-white text-black hover:bg-white/90 font-bold text-md rounded-xl transition-all active:scale-[0.98]">
-                  Submit Inquiry
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
+              <ContactForm />
               
               <div className="mt-8 flex items-center justify-center gap-2 text-white/20">
                 <Globe className="w-3.5 h-3.5" />

@@ -46,6 +46,7 @@ function Counter({ value }: { value: string }) {
   const [count, setCount] = useState(0);
   const { ref, visible } = useInView();
   
+  
   useEffect(() => {
     if (!visible) return;
     let c = 0;
