@@ -40,7 +40,13 @@ export async function GET(request: NextRequest) {
     const where: any = { status };
 
     if (city) {
-      where.city = { contains: city };
+      const trimmedCity = city.trim();
+      if (trimmedCity) {
+        where.city = {
+          contains: trimmedCity,
+          mode: 'insensitive',
+        };
+      }
     }
 
     if (minPrice || maxPrice) {
